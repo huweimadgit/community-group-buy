@@ -26,3 +26,6 @@ Thumbs.debug
 # 上传临时目录（后端存分片用）
 server/tmp/
 server/uploads/
+
+# 后端日志目录
+server/logs/
