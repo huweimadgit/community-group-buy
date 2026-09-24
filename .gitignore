@@ -1,0 +1,28 @@
+# 依赖
+node_modules/
+
+# 环境变量（重要！绝不提交）
+.env
+.env.local
+.env.*.local
+
+# 构建产物
+
+dist/
+build/
+
+# 日志
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.debug
+
+# 上传临时目录（后端存分片用）
+server/tmp/
+server/uploads/
