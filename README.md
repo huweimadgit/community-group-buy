@@ -3,11 +3,13 @@
 React + Node.js + MySQL 全栈项目。
 
 ## 目录结构
+
 - `docs/` 设计文档（需求、数据库、API）
 - `server/` 后端（Node.js + Express + MySQL）
 - `client/` 前端（React + Vite）
 
 ## 开发进度
+
 - [x] 阶段 0：项目初始化 + 设计文档
 - [ ] 阶段 1：后端脚手架
 - [ ] 阶段 2：数据库建表
@@ -23,4 +25,5 @@ React + Node.js + MySQL 全栈项目。
 - [ ] 阶段 12：部署上线
 
 ## 本地启动
+
 （阶段 1 完成后补充）
