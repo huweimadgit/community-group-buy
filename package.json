@@ -5,6 +5,9 @@
   "type": "module",
   "author": "huweimadgit",
   "license": "MIT",
+  "allowScripts": {
+    "esbuild": true
+  },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
