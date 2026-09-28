@@ -27,13 +27,15 @@ const run = async () => {
   logger.info('建表完成 ✅');
 
   const [rows] = await conn.query('SHOW TABLES');
-  logger.info(`当前数据库共有 ${rows.length} 张表：`);
-  rows.forEach((r) => logger.info('  - ' + Object.values(r)[0]));
+  const tables = rows as Record<string, string>[];
+  logger.info(`当前数据库共有 ${tables.length} 张表：`);
+  tables.forEach((r) => logger.info('  - ' + Object.values(r)[0]));
 
   await conn.end();
 };
 
-run().catch((err) => {
-  logger.error('建表失败: ' + err.message);
+run().catch((err: unknown) => {
+  const message = err instanceof Error ? err.message : String(err);
+  logger.error('建表失败: ' + message);
   process.exit(1);
 });

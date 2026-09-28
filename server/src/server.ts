@@ -3,7 +3,7 @@ import app from './app.js';
 import { logger } from './utils/logger.js';
 import { pool } from './config/db.js';
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 const start = async () => {
   try {
@@ -17,7 +17,8 @@ const start = async () => {
       logger.info(`健康检查: http://localhost:${PORT}/api/health`);
     });
   } catch (err) {
-    logger.error('启动失败: ' + err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    logger.error('启动失败: ' + message);
     process.exit(1);
   }
 };

@@ -3,6 +3,11 @@ import bcrypt from 'bcryptjs';
 import mysql from 'mysql2/promise';
 import { logger } from '../utils/logger.js';
 
+interface UserRow {
+  id: number;
+  username: string;
+}
+
 const run = async () => {
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST,
@@ -15,10 +20,8 @@ const run = async () => {
 
   logger.info('开始插入种子数据...');
 
-  // 所有测试账号密码都是 123456
   const passwordHash = bcrypt.hashSync('123456', 10);
 
-  // 1. 用户
   await conn.query(
     `INSERT INTO users (username, password_hash, phone, role) VALUES
       ('admin',  ?, '13800000001', 'admin'),
@@ -31,10 +34,11 @@ const run = async () => {
   );
   logger.info('用户插入完成');
 
-  const [userRows] = await conn.query(`SELECT id, username FROM users`);
-  const userMap = Object.fromEntries(userRows.map((u) => [u.username, u.id]));
+  const [userRows] = await conn.query<UserRow[]>(`SELECT id, username FROM users`);
+  const userMap: Record<string, number> = Object.fromEntries(
+    userRows.map((u) => [u.username, u.id]),
+  );
 
-  // 2. 社区
   await conn.query(
     `INSERT INTO communities (id, name, address, leader_id) VALUES
       (1, '阳光花园自提点', '阳光花园东门 1 号商铺', ?),
@@ -44,7 +48,6 @@ const run = async () => {
   );
   logger.info('社区插入完成');
 
-  // 3. 分类
   await conn.query(
     `INSERT INTO categories (id, name, parent_id, sort) VALUES
       (1, '新鲜果蔬', NULL, 1),
@@ -56,7 +59,6 @@ const run = async () => {
   );
   logger.info('分类插入完成');
 
-  // 4. 商品
   await conn.query(
     `INSERT INTO products (id, category_id, name, description, price, unit) VALUES
       (1, 1, '红富士苹果',     '山东烟台产地直发，脆甜多汁', 12.80, '斤'),
@@ -69,7 +71,6 @@ const run = async () => {
   );
   logger.info('商品插入完成');
 
-  // 5. 社区商品（库存与价格）
   await conn.query(
     `INSERT INTO community_products (community_id, product_id, stock, price) VALUES
       (1, 1, 100, 12.80), (1, 2, 100, 6.50), (1, 3, 50, 29.90), (1, 4, 30, 45.00),
@@ -85,7 +86,8 @@ const run = async () => {
   await conn.end();
 };
 
-run().catch((err) => {
-  logger.error('种子数据失败: ' + err.message);
+run().catch((err: unknown) => {
+  const message = err instanceof Error ? err.message : String(err);
+  logger.error('种子数据失败: ' + message);
   process.exit(1);
 });
