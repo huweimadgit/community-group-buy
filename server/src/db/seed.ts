@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
-import mysql from 'mysql2/promise';
+import mysql, { RowDataPacket } from 'mysql2/promise';
 import { logger } from '../utils/logger.js';
 
-interface UserRow {
+interface UserRow extends RowDataPacket {
   id: number;
   username: string;
 }
@@ -24,11 +24,11 @@ const run = async () => {
 
   await conn.query(
     `INSERT INTO users (username, password_hash, phone, role) VALUES
-      ('admin',  ?, '13800000001', 'admin'),
-      ('leader1',?, '13800000002', 'leader'),
-      ('leader2',?, '13800000003', 'leader'),
-      ('user1',  ?, '13800000004', 'user'),
-      ('user2',  ?, '13800000005', 'user')
+      ('admin',   ?, '13800000001', 'admin'),
+      ('leader1', ?, '13800000002', 'leader'),
+      ('leader2', ?, '13800000003', 'leader'),
+      ('user1',   ?, '13800000004', 'user'),
+      ('user2',   ?, '13800000005', 'user')
      ON DUPLICATE KEY UPDATE phone = VALUES(phone)`,
     [passwordHash, passwordHash, passwordHash, passwordHash, passwordHash],
   );
@@ -36,7 +36,7 @@ const run = async () => {
 
   const [userRows] = await conn.query<UserRow[]>(`SELECT id, username FROM users`);
   const userMap: Record<string, number> = Object.fromEntries(
-    userRows.map((u) => [u.username, u.id]),
+    userRows.map((u): [string, number] => [u.username, u.id]),
   );
 
   await conn.query(
@@ -61,12 +61,12 @@ const run = async () => {
 
   await conn.query(
     `INSERT INTO products (id, category_id, name, description, price, unit) VALUES
-      (1, 1, '红富士苹果',     '山东烟台产地直发，脆甜多汁', 12.80, '斤'),
-      (2, 1, '海南香蕉',       '自然熟，无催熟剂',           6.50,  '斤'),
-      (3, 2, '土鸡蛋',         '散养土鸡蛋，30枚装',         29.90, '盒'),
-      (4, 2, '黑猪五花肉',     '当日现杀，冷链配送',         45.00, '斤'),
-      (5, 3, '大闸蟹',         '阳澄湖大闸蟹，公母各半',     88.00, '只'),
-      (6, 4, '五常大米',       '东北五常稻花香，10斤装',     59.90, '袋')
+      (1, 1, '红富士苹果', '山东烟台产地直发，脆甜多汁', 12.80, '斤'),
+      (2, 1, '海南香蕉',   '自然熟，无催熟剂',           6.50,  '斤'),
+      (3, 2, '土鸡蛋',     '散养土鸡蛋，30枚装',         29.90, '盒'),
+      (4, 2, '黑猪五花肉', '当日现杀，冷链配送',         45.00, '斤'),
+      (5, 3, '大闸蟹',     '阳澄湖大闸蟹，公母各半',     88.00, '只'),
+      (6, 4, '五常大米',   '东北五常稻花香，10斤装',     59.90, '袋')
      ON DUPLICATE KEY UPDATE name = VALUES(name)`,
   );
   logger.info('商品插入完成');
