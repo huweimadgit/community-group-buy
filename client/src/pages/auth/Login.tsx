@@ -1,10 +1,11 @@
 import { Form, Input, Button, Card, message } from 'antd';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth';
 import type { LoginParams } from '@/api/auth';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const login = useAuthStore((s) => s.login);
   const loading = useAuthStore((s) => s.loading);
 
@@ -12,7 +13,9 @@ export default function Login() {
     try {
       await login(values);
       message.success('登录成功');
-      navigate('/');
+      // 如果之前被守卫拦下，跳回原页面
+      const from = (location.state as { from?: string } | null)?.from || '/';
+      navigate(from, { replace: true });
     } catch {
       // request.ts 里已统一弹错误提示
     }

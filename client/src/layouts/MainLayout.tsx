@@ -1,6 +1,13 @@
-import { Layout, Menu, Button, Space } from 'antd';
+import { Layout, Menu, Button, Space, Dropdown, Avatar } from 'antd';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingCartOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import {
+  ShoppingCartOutlined,
+  UserOutlined,
+  HomeOutlined,
+  OrderedListOutlined,
+  SettingOutlined,
+  CrownOutlined,
+} from '@ant-design/icons';
 import { useAuthStore } from '@/store/auth';
 
 const { Header, Content, Footer } = Layout;
@@ -13,35 +20,76 @@ export default function MainLayout() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
+
+  // 根据角色动态组装菜单
+  const menuItems = [
+    { key: '/', icon: <HomeOutlined />, label: <Link to="/">首页</Link> },
+    {
+      key: '/cart',
+      icon: <ShoppingCartOutlined />,
+      label: <Link to="/cart">购物车</Link>,
+    },
+  ];
+
+  if (user) {
+    menuItems.push({
+      key: '/orders',
+      icon: <OrderedListOutlined />,
+      label: <Link to="/orders">我的订单</Link>,
+    });
+  }
+
+  if (user && (user.role === 'leader' || user.role === 'admin')) {
+    menuItems.push({
+      key: '/admin',
+      icon: <SettingOutlined />,
+      label: <Link to="/admin">管理后台</Link>,
+    });
+  }
+
+  if (user && user.role === 'leader') {
+    menuItems.push({
+      key: '/leader',
+      icon: <CrownOutlined />,
+      label: <Link to="/leader">团长中心</Link>,
+    });
+  }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ color: '#fff', fontSize: 18, fontWeight: 600 }}>社区团购</div>
+      <Header
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Link to="/" style={{ color: '#fff', fontSize: 18, fontWeight: 600, whiteSpace: 'nowrap' }}>
+          社区团购
+        </Link>
+
         <Menu
           theme="dark"
           mode="horizontal"
           selectedKeys={[location.pathname]}
           style={{ flex: 1, minWidth: 0, marginLeft: 24 }}
-          items={[
-            { key: '/', icon: <HomeOutlined />, label: <Link to="/">首页</Link> },
-            {
-              key: '/cart',
-              icon: <ShoppingCartOutlined />,
-              label: <Link to="/cart">购物车</Link>,
-            },
-          ]}
+          items={menuItems}
         />
+
         <Space>
           {user ? (
-            <>
-              <span style={{ color: '#fff' }}>
-                <UserOutlined /> {user.username}（{user.role}）
-              </span>
-              <Button onClick={handleLogout}>退出</Button>
-            </>
+            <Dropdown
+              menu={{
+                items: [{ key: 'logout', label: '退出登录', onClick: handleLogout }],
+              }}
+            >
+              <Space style={{ color: '#fff', cursor: 'pointer' }}>
+                <Avatar size="small" icon={<UserOutlined />} src={user.avatar} />
+                {user.username}
+              </Space>
+            </Dropdown>
           ) : (
             <>
               <Button type="primary" onClick={() => navigate('/login')}>
@@ -52,9 +100,11 @@ export default function MainLayout() {
           )}
         </Space>
       </Header>
+
       <Content style={{ padding: '24px 48px' }}>
         <Outlet />
       </Content>
+
       <Footer style={{ textAlign: 'center' }}>社区团购 ©2026</Footer>
     </Layout>
   );
