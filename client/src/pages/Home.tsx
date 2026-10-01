@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Card, Row, Col, Input, Pagination, Empty, Spin, Tag, Button, Space } from 'antd';
+import { Card, Row, Col, Input, Pagination, Empty, Spin, Tag, Button, Space, message } from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { productApi } from '@/api/products';
 import { categoryApi } from '@/api/categories';
 import type { Product, Pagination as PaginationType } from '@/types/product';
 import type { Category } from '@/types/category';
+import { useAuthStore } from '@/store/auth';
+import { useCartStore } from '@/store/cart';
 
 const { Search } = Input;
 
 export default function Home() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const user = useAuthStore((s) => s.user);
+  const addToCart = useCartStore((s) => s.addToCart);
+  const [adding, setAdding] = useState<number | null>(null); // 那个商品正在加
 
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -172,11 +178,18 @@ export default function Home() {
                       type="primary"
                       block
                       style={{ marginTop: 12 }}
-                      onClick={(e) => {
+                      onClick={async (e) => {
                         e.stopPropagation();
-                        // 购物车功能阶段 7 做，先占位
-                        navigate('/login');
+                        if (!user) {
+                          message.warning('请先登录');
+                          navigate('/login', { state: { from: '/' } });
+                          return;
+                        }
+                        setAdding(p.id);
+                        await addToCart({ product_id: p.id, community_id: 1, quantity: 1 });
+                        setAdding(null);
                       }}
+                      loading={adding === p.id}
                     >
                       加入购物车
                     </Button>

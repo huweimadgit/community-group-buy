@@ -1,4 +1,4 @@
-import { Layout, Menu, Button, Space, Dropdown, Avatar } from 'antd';
+import { Layout, Menu, Button, Space, Dropdown, Avatar, Badge } from 'antd';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   ShoppingCartOutlined,
@@ -9,6 +9,7 @@ import {
   CrownOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '@/store/auth';
+import { useCartStore } from '@/store/cart';
 
 const { Header, Content, Footer } = Layout;
 
@@ -17,6 +18,7 @@ export default function MainLayout() {
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const totalItems = useCartStore((s) => s.totalItems);
 
   const handleLogout = () => {
     logout();
@@ -29,7 +31,18 @@ export default function MainLayout() {
     {
       key: '/cart',
       icon: <ShoppingCartOutlined />,
-      label: <Link to="/cart">购物车</Link>,
+      label: (
+        <Link to="/cart">
+          <Badge
+            count={totalItems}
+            size="small"
+            offset={[8, 12]}
+            styles={{ root: { color: 'rgba(255, 255, 255, 0.65)' } }}
+          >
+            购物车
+          </Badge>
+        </Link>
+      ),
     },
   ];
 

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { User } from '@/types/user';
 import { authApi, type LoginParams } from '@/api/auth';
+import { useCartStore } from './cart';
 
 interface AuthState {
   user: User | null;
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem('token');
     set({ user: null, token: null });
+    useCartStore.getState().reset();
   },
 
   fetchMe: async () => {

@@ -8,6 +8,7 @@ import authRouter from './routes/auth.js';
 import categoriesRouter from './routes/categories.js';
 import productsRouter from './routes/products.js';
 import uploadRouter from './routes/upload.js';
+import cartRouter from './routes/cart.js';
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/cart', cartRouter);
 
 app.use(notFound);
 app.use(errorHandler);

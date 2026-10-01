@@ -9,18 +9,24 @@ import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
 import RequireAuth from '@/components/RequireAuth';
 import { useAuthStore } from '@/store/auth';
+import { useCartStore } from '@/store/cart';
+import CartPage from '@/pages/cart/Index';
 
 function App() {
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
   const fetchMe = useAuthStore((s) => s.fetchMe);
+  const fetchCart = useCartStore((s) => s.fetchCart);
 
   // 应用启动时，如果本地有 token 但没用户信息，拉一次
   useEffect(() => {
     if (token && !user) {
       fetchMe();
     }
-  }, [token, user, fetchMe]);
+    if (token) {
+      fetchCart();
+    }
+  }, [token, user, fetchMe, fetchCart]);
 
   return (
     <ConfigProvider locale={zhCN}>
@@ -38,7 +44,7 @@ function App() {
               path="cart"
               element={
                 <RequireAuth>
-                  <div style={{ padding: 40, textAlign: 'center' }}>购物车（阶段 7 实现）</div>
+                  <CartPage />
                 </RequireAuth>
               }
             />

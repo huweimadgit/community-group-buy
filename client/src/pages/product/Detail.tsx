@@ -4,12 +4,18 @@ import { Card, Descriptions, Button, Spin, Empty, Space, Tag, message } from 'an
 import { ArrowLeftOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { productApi } from '@/api/products';
 import type { Product } from '@/types/product';
+import { useAuthStore } from '@/store/auth';
+import { useCartStore } from '@/store/cart';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
+
+  const user = useAuthStore((s) => s.user);
+  const addToCart = useCartStore((s) => s.addToCart);
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -111,7 +117,16 @@ export default function ProductDetail() {
                 type="primary"
                 size="large"
                 icon={<ShoppingCartOutlined />}
-                onClick={() => message.info('购物车功能阶段 7 实现')}
+                onClick={async () => {
+                  if (!user) {
+                    message.warning('请先登录');
+                    navigate('/login', { state: { from: `/products/${product.id}` } });
+                    return;
+                  }
+                  setAdding(true);
+                  await addToCart({ product_id: product.id, community_id: 1, quantity: 1 });
+                  setAdding(false);
+                }}
               >
                 加入购物车
               </Button>
