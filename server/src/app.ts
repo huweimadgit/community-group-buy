@@ -9,6 +9,7 @@ import categoriesRouter from './routes/categories.js';
 import productsRouter from './routes/products.js';
 import uploadRouter from './routes/upload.js';
 import cartRouter from './routes/cart.js';
+import orderRouter from './routes/orders.js';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/cart', cartRouter);
+app.use('/api/orders', orderRouter);
 
 app.use(notFound);
 app.use(errorHandler);

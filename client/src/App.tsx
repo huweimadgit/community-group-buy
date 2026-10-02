@@ -11,6 +11,9 @@ import RequireAuth from '@/components/RequireAuth';
 import { useAuthStore } from '@/store/auth';
 import { useCartStore } from '@/store/cart';
 import CartPage from '@/pages/cart/Index';
+import Checkout from '@/pages/checkout/Index';
+import OrderList from '@/pages/order/Index';
+import OrderDetail from '@/pages/order/Detail';
 
 function App() {
   const token = useAuthStore((s) => s.token);
@@ -45,6 +48,30 @@ function App() {
               element={
                 <RequireAuth>
                   <CartPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="checkout"
+              element={
+                <RequireAuth>
+                  <Checkout />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <RequireAuth>
+                  <OrderList />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="orders/:id"
+              element={
+                <RequireAuth>
+                  <OrderDetail />
                 </RequireAuth>
               }
             />
