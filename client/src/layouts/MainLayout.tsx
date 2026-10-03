@@ -54,20 +54,44 @@ export default function MainLayout() {
     });
   }
 
-  if (user && (user.role === 'leader' || user.role === 'admin')) {
-    menuItems.push({
-      key: '/admin',
-      icon: <SettingOutlined />,
-      label: <Link to="/admin">管理后台</Link>,
-    });
+  if (user && user.role === 'admin') {
+    menuItems.push(
+      {
+        key: '/admin',
+        icon: <SettingOutlined />,
+        label: <Link to="/admin">管理后台</Link>,
+      },
+      {
+        key: '/admin/users',
+        icon: <SettingOutlined />,
+        label: <Link to="/admin/users">用户管理</Link>,
+      },
+      {
+        key: '/admin/orders',
+        icon: <SettingOutlined />,
+        label: <Link to="/admin/orders">全局订单</Link>,
+      },
+    );
   }
 
   if (user && user.role === 'leader') {
-    menuItems.push({
-      key: '/leader',
-      icon: <CrownOutlined />,
-      label: <Link to="/leader">团长中心</Link>,
-    });
+    menuItems.push(
+      {
+        key: '/leader',
+        icon: <CrownOutlined />,
+        label: <Link to="/leader">团长中心</Link>,
+      },
+      {
+        key: '/leader/orders',
+        icon: <CrownOutlined />,
+        label: <Link to="/leader/orders">本团订单</Link>,
+      },
+      {
+        key: '/leader/products',
+        icon: <CrownOutlined />,
+        label: <Link to="/leader/products">本团商品</Link>,
+      },
+    );
   }
 
   return (

@@ -14,6 +14,13 @@ import CartPage from '@/pages/cart/Index';
 import Checkout from '@/pages/checkout/Index';
 import OrderList from '@/pages/order/Index';
 import OrderDetail from '@/pages/order/Detail';
+import LeaderHome from '@/pages/leader/Index';
+import LeaderOrders from '@/pages/leader/Orders';
+import LeaderProducts from '@/pages/leader/Products';
+import Dashboard from '@/pages/admin/Dashboard';
+import AdminUsers from '@/pages/admin/Users';
+import AdminOrders from '@/pages/admin/Orders';
+import RequireRole from '@/components/RequireRole';
 
 function App() {
   const token = useAuthStore((s) => s.token);
@@ -75,6 +82,54 @@ function App() {
                 </RequireAuth>
               }
             />
+            <Route
+              path="leader"
+              element={
+                <RequireRole roles={['leader']}>
+                  <LeaderHome />
+                </RequireRole>
+              }
+            ></Route>
+            <Route
+              path="leader/orders"
+              element={
+                <RequireRole roles={['leader']}>
+                  <LeaderOrders />
+                </RequireRole>
+              }
+            ></Route>
+            <Route
+              path="leader/products"
+              element={
+                <RequireRole roles={['leader']}>
+                  <LeaderProducts />
+                </RequireRole>
+              }
+            ></Route>
+            <Route
+              path="admin"
+              element={
+                <RequireRole roles={['admin']}>
+                  <Dashboard />
+                </RequireRole>
+              }
+            ></Route>
+            <Route
+              path="admin/users"
+              element={
+                <RequireRole roles={['admin']}>
+                  <AdminUsers />
+                </RequireRole>
+              }
+            ></Route>
+            <Route
+              path="admin/orders"
+              element={
+                <RequireRole roles={['admin']}>
+                  <AdminOrders />
+                </RequireRole>
+              }
+            ></Route>
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

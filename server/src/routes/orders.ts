@@ -362,7 +362,7 @@ router.post('/:id/confirm', async (req, res) => {
       return res.fail('只有已发货的订单才能确认收货', 400, 400);
     }
 
-    await conn.query(`UPDATE order SET status = 'completed' WHERE id = ?`, [id]);
+    await conn.query(`UPDATE orders SET status = 'completed' WHERE id = ?`, [id]);
     await conn.commit();
     res.success(null, '已确认发货');
   } catch (err) {
@@ -387,7 +387,7 @@ router.post('/:id/ship', requireRole('leader', 'admin'), async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    const [rows] = await conn.query<OrderRow[]>(`SELECT * FROM order WHERE id = ? FOR UPDATE`, [
+    const [rows] = await conn.query<OrderRow[]>(`SELECT * FROM orders WHERE id = ? FOR UPDATE`, [
       id,
     ]);
     if (rows.length === 0) {
@@ -399,7 +399,7 @@ router.post('/:id/ship', requireRole('leader', 'admin'), async (req, res) => {
       return res.fail('只用待发货的订单才能发货', 400, 400);
     }
 
-    await conn.query(`UPDATE order SET status = 'shipped' WHERE id = ?`, [id]);
+    await conn.query(`UPDATE orders SET status = 'shipped' WHERE id = ?`, [id]);
     await conn.commit();
     res.success(null, '已发货');
   } catch (err) {
