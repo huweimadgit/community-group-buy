@@ -12,6 +12,7 @@ import cartRouter from './routes/cart.js';
 import orderRouter from './routes/orders.js';
 import leaderRouter from './routes/leader.js';
 import adminRouter from './routes/admin.js';
+import reviewsRouter from './routes/reviews.js';
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/leader', leaderRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/reviews', reviewsRouter);
 
 app.use(notFound);
 app.use(errorHandler);

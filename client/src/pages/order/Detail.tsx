@@ -145,6 +145,11 @@ export default function OrderDetail() {
               发货（团长操作）
             </Button>
           )}
+          {order.status === 'completed' && (
+            <Button type="primary" onClick={() => navigate(`/orders/${order.id}/review`)}>
+              去评价
+            </Button>
+          )}
         </Space>
       </Card>
     </div>

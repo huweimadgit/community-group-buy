@@ -21,6 +21,7 @@ import Dashboard from '@/pages/admin/Dashboard';
 import AdminUsers from '@/pages/admin/Users';
 import AdminOrders from '@/pages/admin/Orders';
 import RequireRole from '@/components/RequireRole';
+import OrderReview from '@/pages/order/Review';
 
 function App() {
   const token = useAuthStore((s) => s.token);
@@ -79,6 +80,14 @@ function App() {
               element={
                 <RequireAuth>
                   <OrderDetail />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="orders/:id/review"
+              element={
+                <RequireAuth>
+                  <OrderReview />
                 </RequireAuth>
               }
             />

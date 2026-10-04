@@ -3,6 +3,7 @@ import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { pool } from '../config/db.js';
 import { logger } from '../utils/logger.js';
 import { requireAuth, requireRole } from '../middlewares/auth.js';
+import { getProductReviews } from './reviews.js';
 
 const router = express.Router();
 
@@ -84,6 +85,8 @@ router.get('/', async (req, res) => {
     res.fail('查询商品失败', 1, 500);
   }
 });
+
+router.get('/:id/reviews', getProductReviews);
 
 // GET /api/products/:id — 公开
 router.get('/:id', async (req, res) => {

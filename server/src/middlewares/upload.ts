@@ -22,6 +22,7 @@ const storage = multer.diskStorage({
   },
 });
 
+// 图片上传：≤5MB
 export const uploadImage = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
@@ -29,6 +30,20 @@ export const uploadImage = multer({
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowed.includes(file.mimetype)) {
       cb(new Error('只允许上传 jpg / png / webp / gif 图片'));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+// 视频上传：≤50MB
+export const uploadVideo = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['video/mp4', 'video/webm', 'video/quicktime'];
+    if (!allowed.includes(file.mimetype)) {
+      cb(new Error('只允许上传 mp4 / webm/ mov 视频'));
       return;
     }
     cb(null, true);

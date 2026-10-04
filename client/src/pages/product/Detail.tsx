@@ -1,11 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Descriptions, Button, Spin, Empty, Space, Tag, message } from 'antd';
-import { ArrowLeftOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import {
+  Card,
+  Descriptions,
+  Button,
+  Spin,
+  Empty,
+  Space,
+  Tag,
+  message,
+  Rate,
+  Avatar,
+  Pagination,
+} from 'antd';
+import { ArrowLeftOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { productApi } from '@/api/products';
 import type { Product } from '@/types/product';
 import { useAuthStore } from '@/store/auth';
 import { useCartStore } from '@/store/cart';
+import { reviewApi, type ProductReviewResult } from '@/api/reviews';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +30,9 @@ export default function ProductDetail() {
   const addToCart = useCartStore((s) => s.addToCart);
   const [adding, setAdding] = useState(false);
 
+  const [reviews, setReviews] = useState<ProductReviewResult | null>(null);
+  const [reviewPage, setReviewPage] = useState(1);
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -25,7 +41,12 @@ export default function ProductDetail() {
       .then(setProduct)
       .catch(() => setProduct(null))
       .finally(() => setLoading(false));
-  }, [id]);
+
+    reviewApi
+      .byProduct(Number(id), { page: reviewPage, size: 5 })
+      .then(setReviews)
+      .catch(() => setReviews(null));
+  }, [id, reviewPage]);
 
   if (loading) {
     return (
@@ -133,6 +154,73 @@ export default function ProductDetail() {
             </Space>
           </div>
         </div>
+      </Card>
+
+      <Card
+        title={`用户评价${reviews?.avg_rating ? `（平均${reviews.avg_rating}分）` : ''}`}
+        style={{ marginTop: 24 }}
+      >
+        {!reviews || reviews.list.length === 0 ? (
+          <Empty description="暂无评价" />
+        ) : (
+          <>
+            {reviews.list.map((r) => (
+              <div
+                key={r.id}
+                style={{
+                  padding: '16px 0',
+                  borderBottom: '1px solid #f0f0f0',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                  <Avatar src={r.avatar} icon={<UserOutlined />} size="small" />
+                  <span style={{ marginLeft: 8 }}>{r.username}</span>
+                  <span style={{ marginLeft: 16, color: '#999', fontSize: 12 }}>
+                    {new Date(r.created_at).toLocaleString()}
+                  </span>
+                </div>
+                <Rate disabled value={r.rating} style={{ fontSize: 13 }} />
+                {r.content && <div style={{ marginTop: 8 }}>{r.content}</div>}
+                {r.images && r.images.length > 0 && (
+                  <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {r.images.map((url) => (
+                      <img
+                        key={url}
+                        src={url}
+                        alt=""
+                        style={{
+                          width: 80,
+                          height: 80,
+                          objectFit: 'cover',
+                          borderRadius: 4,
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+                {r.video_url && (
+                  <video
+                    src={r.video_url}
+                    controls
+                    style={{ marginTop: 8, maxWidth: 320, borderRadius: 4 }}
+                  />
+                )}
+              </div>
+            ))}
+
+            {reviews.pagination.totalPages > 1 && (
+              <div style={{ textAlign: 'center', marginTop: 16 }}>
+                <Pagination
+                  current={reviews.pagination.page}
+                  pageSize={reviews.pagination.size}
+                  total={reviews.pagination.total}
+                  onChange={setReviewPage}
+                  showSizeChanger={false}
+                ></Pagination>
+              </div>
+            )}
+          </>
+        )}
       </Card>
     </div>
   );
