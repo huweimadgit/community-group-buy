@@ -5,6 +5,7 @@ import { ArrowLeftOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-desig
 import { orderApi } from '@/api/orders';
 import { reviewApi } from '@/api/reviews';
 import { uploadApi } from '@/api/upload';
+import { uploadVideoByChunks } from '@/utils/chunkUpload';
 import type { Order } from '@/types/order';
 
 const { TextArea } = Input;
@@ -16,6 +17,7 @@ interface ItemFormState {
   video_url: string | null;
   uploadingImage: boolean;
   uploadingVideo: boolean;
+  videoProgress: number;
 }
 
 export default function OrderReview() {
@@ -41,6 +43,7 @@ export default function OrderReview() {
             video_url: null,
             uploadingImage: false,
             uploadingVideo: false,
+            videoProgress: 0,
           };
         });
         setForms(init);
@@ -84,8 +87,10 @@ export default function OrderReview() {
     }
     updateForm(itemId, { uploadingVideo: true });
     try {
-      const result = await uploadApi.video(file);
-      updateForm(itemId, { video_url: result.url, uploadingVideo: false });
+      const result = await uploadVideoByChunks(file, (percent) => {
+        updateForm(itemId, { videoProgress: percent });
+      });
+      updateForm(itemId, { video_url: result.url, uploadingVideo: false, videoProgress: 100 });
       message.success('视频上传成功');
     } catch {
       updateForm(itemId, { uploadingVideo: false });
@@ -263,11 +268,13 @@ export default function OrderReview() {
                       padding: '6px 16px',
                       border: '1px dashed #d9d9d9',
                       borderRadius: 4,
-                      cursor: 'pointer',
+                      cursor: form.uploadingVideo ? 'not-allowed' : 'pointer',
                       color: '#666',
                     }}
                   >
-                    {form.uploadingVideo ? '上传中...' : '选择视频'}
+                    {form.uploadingVideo
+                      ? '上传中${form.videoProgress ?? 0}%'
+                      : '选择视频（分片上传）'}
                     <input
                       type="file"
                       accept="video/mp4,video/webm,video/quicktime"

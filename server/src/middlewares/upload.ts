@@ -50,4 +50,10 @@ export const uploadVideo = multer({
   },
 });
 
+// 分片上传： 把分片放内存，因为 handler 要按 hash 分目录存
+export const uploadChunk = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 单分片 ≤10MB
+});
+
 export const UPLOAD_DIR_PATH = UPLOAD_DIR;

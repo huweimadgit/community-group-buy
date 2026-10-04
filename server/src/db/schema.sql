@@ -181,6 +181,7 @@ CREATE TABLE IF NOT EXISTS media (
   owner_id   BIGINT       DEFAULT NULL           COMMENT '归属ID（上传时可能还没确定）',
   type       ENUM('image','video')    NOT NULL,
   url        VARCHAR(255) NOT NULL,
+  file_hash  VARCHAR(64)  DEFAULT NULL           COMMENT '文件hash（用于秒传）'
   cover_url  VARCHAR(255) DEFAULT NULL           COMMENT '视频封面',
   size       BIGINT       NOT NULL DEFAULT 0     COMMENT '字节数',
   duration   INT          DEFAULT NULL           COMMENT '视频时长(秒)',
@@ -188,6 +189,7 @@ CREATE TABLE IF NOT EXISTS media (
   created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
+  UNIQUE KEY un_file_hash (file_hash),
   KEY idx_owner (owner_type, owner_id),
   KEY idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='媒体文件';
