@@ -1,92 +1,78 @@
 # 社区团购平台
 
-React + TypeScript + Node.js + MySQL 全栈项目。
+React + TypeScript + Node.js + MySQL 全栈项目。用户下单购买生鲜日用品到自提点取货，团长管理本团商品与订单，管理员管理全平台。
 
-## 在线访问
+## 🌐 在线访问
 
-- 前端：https://community-group-buy-xxx.vercel.app
-- 后端 API：https://community-group-buy-api.onrender.com
+- **前端**：https://community-group-buy.huweimad.workers.dev
+- **后端 API**：https://community-group-buy.onrender.com
+- **健康检查**：https://community-group-buy.onrender.com/api/health
 
-## 技术栈
+> 后端部署在 Render 免费版，15 分钟无请求会休眠，首次访问需等 30-60 秒冷启动。
 
-- 前端：React 18 + TypeScript + Vite + React Router + Zustand + Ant Design + ECharts
-- 后端：Node.js + TypeScript + Express + mysql2 + JWT + multer
-- 数据库：MySQL（本地 Docker / 线上 TiDB Cloud）
-- 文件存储：Cloudflare R2
-- 部署：Vercel（前端）+ Render（后端）
+## 🔑 测试账号（密码都是 123456）
 
-## 核心功能
+| 角色     | 用户名                |
+| -------- | --------------------- |
+| 管理员   | `admin`               |
+| 团长     | `leader1` / `leader2` |
+| 普通用户 | `user1` / `user2`     |
 
-- 用户注册 / 登录（JWT）
-- 商品浏览、搜索、分类筛选
-- 购物车
-- 下单（事务 + 悲观锁防超卖）
-- 订单状态机（待支付/待发货/待自提/已完成）
-- 评价（图片 + 视频）
-- 视频分片上传（秒传 + 断点续传）
-- 团长中心（本团商品库存/订单管理）
-- 管理端（用户管理、数据看板）
+## ✨ 核心功能
 
-## 本地开发
+- **用户端**：注册登录、商品浏览/搜索/筛选、购物车、下单支付、订单状态机、评价（图片 + 视频）
+- **团长端**：本团数据统计、订单发货、商品库存/价格管理
+- **管理端**：用户管理、全局订单、ECharts 数据看板
 
-### 环境要求
+## 🛠 技术栈
+
+- **前端**：React 18 + TypeScript + Vite + React Router + Zustand + Ant Design + ECharts
+- **后端**：Node.js + TypeScript + Express + mysql2 + JWT + multer
+- **数据库**：MySQL（本地 Docker / 线上 TiDB Cloud Serverless）
+- **文件存储**：Cloudflare R2
+- **部署**：Cloudflare Pages（前端）+ Render（后端）
+
+## 🎯 技术亮点
+
+- **事务 + 悲观锁**：下单扣库存 + 建订单 + 建订单项，三步原子操作，防止并发超卖
+- **订单状态机**：每次状态流转都校验合法性
+- **数据级权限**：团长只能操作本团数据
+- **视频分片上传**：切片 + 秒传 + 断点续传 + 进度条
+- **对象存储**：Cloudflare R2 托管所有图片和视频
+
+## 🚀 本地开发
+
+### 前置要求
 
 - Node.js ≥ 18
 - Docker Desktop
 
-### 步骤
+### 1. 启动 MySQL
 
-1. 启动 MySQL
-   \`\`\`bash
-   docker run -d --name cgb-mysql -p 3306:3306 \\
-   -e MYSQL_ROOT_PASSWORD=root123456 \\
-   -e MYSQL_DATABASE=community_group_buy \\
-   -v cgb-mysql-data:/var/lib/mysql \\
-   mysql:8.0
-   \`\`\`
+```
+docker run -d --name cgb-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root123456 -e MYSQL_DATABASE=community_group_buy -v cgb-mysql-data:/var/lib/mysql mysql:8.0
+```
 
-2. 后端
-   \`\`\`bash
-   cd server
-   npm install
-   cp .env.example .env # 填好配置
-   npm run db:reset # 建表 + 种子数据
-   npm run dev # http://localhost:3000
-   \`\`\`
+### 2. 后端
 
-3. 前端
-   \`\`\`bash
-   cd client
-   npm install
-   npm run dev # http://localhost:5173
-   \`\`\`
+```
+cd server
+npm install
+cp .env.example .env
+npm run db:reset
+npm run dev
+```
 
-### 测试账号（密码都是 123456）
+### 3. 前端
 
-- 管理员：`admin`
-- 团长：`leader1` / `leader2`
-- 普通用户：`user1` / `user2`
+```
+cd client
+npm install
+npm run dev
+```
 
-## 目录结构
+浏览器打开 `http://localhost:5173`，用测试账号登录。
 
-\`\`\`
-community-group-buy/
-├── docs/ # 需求、数据库、API 文档
-├── server/ # 后端
-└── client/ # 前端
-\`\`\`
+## 📄 License
 
-## 部署
-
-- 前端：Vercel（自动构建）
-- 后端：Render（自动部署）
-- 数据库：TiDB Cloud
-- 文件：Cloudflare R2
-
-## 提交历史
-
-（可选，附上 git log 的输出）
-
-## 截图
-
-（后续可以加）
+MIT
