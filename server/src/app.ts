@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import { responseHandler } from './middlewares/response.js';
 import { notFound, errorHandler } from './middlewares/errorHandler.js';
-import { UPLOAD_DIR_PATH } from './middlewares/upload.js';
 import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
 import categoriesRouter from './routes/categories.js';
@@ -20,9 +19,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(responseHandler);
-
-// 静态文件服务：/uploads/xxx.jpg 直接返回文件
-app.use('/uploads', express.static(UPLOAD_DIR_PATH));
 
 app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);

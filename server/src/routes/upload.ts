@@ -1,21 +1,14 @@
 import express from 'express';
 import path from 'node:path';
-import fs from 'node:fs';
-import fsp from 'node:fs/promises';
 import crypto from 'node:crypto';
 import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise';
-import { uploadImage, uploadVideo, uploadChunk, UPLOAD_DIR_PATH } from '../middlewares/upload.js';
+import { uploadImage, uploadVideo, uploadChunk } from '../middlewares/upload.js';
 import { requireAuth } from '../middlewares/auth.js';
 import { pool } from '../config/db.js';
 import { logger } from '../utils/logger.js';
+import { uploadToR2 } from '../utils/r2.js';
 
 const router = express.Router();
-
-// 分片临时目录：server/tmp/chunks/{file_hash}/
-const CHUNK_BASE = path.resolve(process.cwd(), 'tmp', 'chunks');
-if (!fs.existsSync(CHUNK_BASE)) {
-  fs.mkdirSync(CHUNK_BASE, { recursive: true });
-}
 
 // ============================================================
 // POST /api/upload/image — L1:图片直传（leader/admin 用于商品；所有登录用户用于评价）
@@ -32,17 +25,25 @@ router.post(
       next();
     });
   },
-  (req, res) => {
+  async (req, res) => {
     if (!req.file) {
       return res.fail('未接收到文件，字段名应为 file', 400, 400);
     }
-    const url = `/uploads/${req.file.filename}`;
-    res.success({
-      url,
-      filename: req.file.filename,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-    });
+    try {
+      const ext = path.extname(req.file.originalname).toLowerCase() || '.jpg';
+      const key = `images/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`;
+      const url = await uploadToR2(req.file.buffer, key, req.file.mimetype);
+      res.success({
+        url,
+        filename: key,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error('图片上传到 R2 失败: ' + msg);
+      res.fail('上传失败', 1, 500);
+    }
   },
 );
 
@@ -61,14 +62,23 @@ router.post(
       next();
     });
   },
-  (req, res) => {
+  async (req, res) => {
     if (!req.file) return res.fail('未接收到文件，字段名应为 file', 400, 400);
-    res.success({
-      url: `/uploads/${req.file.filename}`,
-      filename: req.file.filename,
-      size: req.file.size,
-      mimetype: req.file.mimetype,
-    });
+    try {
+      const ext = path.extname(req.file.originalname).toLowerCase() || '.mp4';
+      const key = `videos/${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`;
+      const url = await uploadToR2(req.file.buffer, key, req.file.mimetype);
+      res.success({
+        url,
+        filename: key,
+        size: req.file.size,
+        mimetype: req.file.mimetype,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error('视频上传到 R2 失败: ' + msg);
+      res.fail('上传失败', 1, 500);
+    }
   },
 );
 
@@ -130,7 +140,16 @@ router.post('/video/init', requireAuth, async (req, res) => {
 // L2：分片上传 —— 接收单个分片
 // POST /api/upload/video/chunk
 // multipart/form-data: file + file_hash + chunk_index + total_chunks
+// 把分片放内存（不改本地磁盘，直接转存 R2 的一个临时 key）
+// 更简单的做法：分片留在内存，等合并后一次性传 R2
+// 这里为了兼容现有表结构，把分片内容 base64 存到数据库？
+// —— 不，我们改策略：分片暂存到本地临时目录，合并后传 R2
 // ============================================================
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
+const TMP_DIR = path.resolve(process.cwd(), 'tmp', 'chunks');
+if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR, { recursive: true });
+
 router.post(
   '/video/chunk',
   requireAuth,
@@ -150,9 +169,7 @@ router.post(
       total_chunks?: unknown;
     };
 
-    if (typeof file_hash !== 'string' || !file_hash) {
-      return res.fail('file_hash 无效', 400, 400);
-    }
+    if (typeof file_hash !== 'string' || !file_hash) return res.fail('file_hash 无效', 400, 400);
     const idx = Number(chunk_index);
     const total = Number(total_chunks);
     if (!Number.isInteger(idx) || idx < 0) return res.fail('chunk_index 无效', 400, 400);
@@ -161,7 +178,7 @@ router.post(
 
     try {
       // 分片存到 tmp/chunks/{hash}/{index}
-      const chunkDir = path.join(CHUNK_BASE, file_hash);
+      const chunkDir = path.join(TMP_DIR, file_hash);
       await fsp.mkdir(chunkDir, { recursive: true });
       const chunkPath = path.join(chunkDir, String(idx));
       await fsp.writeFile(chunkPath, req.file.buffer);
@@ -206,8 +223,7 @@ router.post('/video/complete', requireAuth, async (req, res) => {
   try {
     // 1. 取所有分片（按 index 排序）
     const [chunks] = await pool.query<RowDataPacket[]>(
-      `SELECT chunk_index, chunk_path FROM upload_chunks
-       WHERE file_hash = ? ORDER BY chunk_index ASC`,
+      `SELECT chunk_index, chunk_path FROM upload_chunks WHERE file_hash = ? ORDER BY chunk_index ASC`,
       [file_hash],
     );
 
@@ -221,45 +237,31 @@ router.post('/video/complete', requireAuth, async (req, res) => {
     }
 
     // 2. 用 CHUNK_BASE + file_hash + index 拼实际路径（不依赖数据库存的路径）
-    const chunkDir = path.join(CHUNK_BASE, file_hash);
+    const chunkDir = path.join(TMP_DIR, file_hash);
     const chunkPaths: string[] = [];
     for (let i = 0; i < total; i++) {
       const p = path.join(chunkDir, String(i));
-      if (!fs.existsSync(p)) {
-        return res.fail(`分片文件不存在：index=${i}`, 400, 400);
-      }
+      if (!fs.existsSync(p)) return res.fail(`分片文件不存在：index=${i}`, 400, 400);
       chunkPaths.push(p);
     }
-    // 5. 生成本次最终文件名
+
+    // 合并到内存 buffer‘
+    const buffers: Buffer[] = [];
+    for (const p of chunkPaths) {
+      buffers.push(await fsp.readFile(p));
+    }
+    const finalBuffer = Buffer.concat(buffers);
+
+    // 上传 R2
     const ext = path.extname(file_name).toLowerCase() || '.mp4';
-    const finalName = `${Date.now()}=${crypto.randomBytes(8).toString('hex')}${ext}`;
-    const finalPath = path.join(UPLOAD_DIR_PATH, finalName);
-
-    // 4. 流式合并
-    await new Promise<void>((resolve, reject) => {
-      const ws = fs.createWriteStream(finalPath);
-      ws.on('error', reject);
-      ws.on('finish', resolve);
-
-      const appendNext = (i: number) => {
-        if (i >= chunkPaths.length) {
-          ws.end();
-          return;
-        }
-        const rs = fs.createReadStream(chunkPaths[i]);
-        rs.on('error', reject);
-        rs.on('end', () => appendNext(i + 1));
-        rs.pipe(ws, { end: false });
-      };
-      appendNext(0);
-    });
+    const key = `videos/${Date.now()}=${crypto.randomBytes(8).toString('hex')}${ext}`;
+    const url = await uploadToR2(finalBuffer, key, 'video/mp4');
 
     // 5. 清理分片
     await fsp.rm(chunkDir, { recursive: true, force: true });
     await pool.query(`DELETE FROM upload_chunks WHERE file_hash = ?`, [file_hash]);
 
     // 6. 写 media 表（用于秒传）
-    const url = `/uploads/${finalName}`;
     await pool.query<ResultSetHeader>(
       `INSERT INTO media (owner_type, owner_id, type, url, file_hash, size, status)
        VALUES ('review', null, 'video', ?, ?, ?, 'done')
@@ -267,7 +269,7 @@ router.post('/video/complete', requireAuth, async (req, res) => {
       [url, file_hash, size],
     );
 
-    res.success({ url, filename: finalName, size });
+    res.success({ url, filename: key, size });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     logger.error('合并分片失败: ' + msg);

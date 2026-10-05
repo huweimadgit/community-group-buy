@@ -1,26 +1,6 @@
 import multer from 'multer';
-import path from 'node:path';
-import fs from 'node:fs';
-import crypto from 'node:crypto';
 
-const UPLOAD_DIR = path.resolve(process.cwd(), process.env.UPLOAD_DIR || 'uploads');
-
-// 目录不存在则创建
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: (_req, file, cb) => {
-    // 保留原扩展名，用随机名防止重名
-    const ext = path.extname(file.originalname).toLowerCase();
-    const name = `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${ext}`;
-    cb(null, name);
-  },
-});
+const storage = multer.memoryStorage();
 
 // 图片上传：≤5MB
 export const uploadImage = multer({
@@ -52,8 +32,6 @@ export const uploadVideo = multer({
 
 // 分片上传： 把分片放内存，因为 handler 要按 hash 分目录存
 export const uploadChunk = multer({
-  storage: multer.memoryStorage(),
+  storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 单分片 ≤10MB
 });
-
-export const UPLOAD_DIR_PATH = UPLOAD_DIR;
