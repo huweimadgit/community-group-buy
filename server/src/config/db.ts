@@ -11,4 +11,8 @@ export const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
   charset: 'utf8mb4',
+  multipleStatements: true,
+  ssl: process.env.DB_HOST?.includes('tidbcloud.com')
+    ? { minVersion: 'TLSv1.2', rejectUnauthorized: true } // 生产环境应验证证书
+    : undefined,
 });
