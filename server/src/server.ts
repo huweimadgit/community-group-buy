@@ -13,8 +13,8 @@ const start = async () => {
     logger.info('MySQL 连接成功');
 
     app.listen(PORT, '0.0.0.0', () => {
-      logger.info(`服务已启动: http://localhost:${PORT}`);
-      logger.info(`健康检查: http://localhost:${PORT}/api/health`);
+      logger.info(`服务已启动，监听 0.0.0.0:${PORT}`);
+      logger.info(`健康检查: /api/health`);
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
