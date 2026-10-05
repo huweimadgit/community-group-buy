@@ -15,12 +15,10 @@ import {
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { orderApi } from '@/api/orders';
 import { type Order, type OrderStatus, ORDER_STATUS_TEXT, ORDER_STATUS_COLOR } from '@/types/order';
-import { useAuthStore } from '@/store/auth';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const user = useAuthStore((s) => s.user);
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState<Order | null>(null);
 
@@ -58,8 +56,6 @@ export default function OrderDetail() {
   }
 
   if (!order) return <Empty description="订单不存在" />;
-
-  const isLeaderOrAdmin = user?.role === 'leader' || user?.role === 'admin';
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>

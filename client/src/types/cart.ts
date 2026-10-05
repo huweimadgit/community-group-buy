@@ -18,7 +18,7 @@ export interface CartGroup {
   items: CartItem[];
 }
 
-export interface GartResult {
+export interface CartResult {
   groups: CartGroup[];
   totalItems: number;
 }

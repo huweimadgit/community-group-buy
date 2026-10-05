@@ -28,7 +28,7 @@ export default function ProductDetail() {
 
   const user = useAuthStore((s) => s.user);
   const addToCart = useCartStore((s) => s.addToCart);
-  const [adding, setAdding] = useState(false);
+  const [, setAdding] = useState(false);
 
   const [reviews, setReviews] = useState<ProductReviewResult | null>(null);
   const [reviewPage, setReviewPage] = useState(1);

@@ -140,7 +140,7 @@ export default function Checkout() {
             }}
           >
             <Text style={{ fontSize: 16 }}>应付总额：</Text>
-            <Text style={{ fontSize: 14, color: '#ff4d4f', fontWeigth: 600 }}>
+            <Text style={{ fontSize: 14, color: '#ff4d4f', fontWeight: 600 }}>
               ￥{totalPrice.toFixed(2)}
             </Text>
           </div>
