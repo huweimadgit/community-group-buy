@@ -13,6 +13,7 @@ import {
   Carousel,
   Skeleton,
 } from 'antd';
+import { PictureOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { productApi } from '@/api/products';
 import { categoryApi } from '@/api/categories';
@@ -159,9 +160,56 @@ export default function Home() {
           <Row gutter={[16, 16]}>
             {[1, 2, 3, 4].map((item) => (
               <Col xs={24} sm={12} md={8} lg={6} key={item}>
-                <Card>
-                  <Skeleton.Image active style={{ width: '100%', height: 180 }} />
-                  <Skeleton active paragraph={{ rows: 2 }} style={{ marginTop: 16 }} />
+                <Card styles={{ body: { padding: 0 } }}>
+                  {/* 图片占位区域：Flex 居中 + 扫光背景 */}
+                  <div
+                    style={{
+                      width: '100%',
+                      height: 180,
+                      backgroundColor: '#f0f2f5', // 统一底色
+                      position: 'relative',
+                      overflow: 'hidden',
+                      display: 'flex', // Flex 布局
+                      alignItems: 'center', // 垂直居中
+                      justifyContent: 'center', // 水平居中
+                      borderTopLeftRadius: 8,
+                      borderTopRightRadius: 8,
+                    }}
+                  >
+                    {/* 1. 扫光动画层 */}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background:
+                          'linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)',
+                        transform: 'translateX(-100%)',
+                        animation: 'shimmer 1.5s infinite',
+                      }}
+                    />
+
+                    {/* 2. 居中的图片图标（它会浮在动画层上面） */}
+                    <PictureOutlined
+                      style={{ fontSize: 48, color: '#bfbfbf', position: 'relative', zIndex: 1 }}
+                    />
+
+                    {/* 3. 动画关键帧 */}
+                    <style>
+                      {`
+                        @keyframes shimmer {
+                          100% { transform: translateX(100%); }
+                        }
+                      `}
+                    </style>
+                  </div>
+
+                  {/* 下方的文字描述仍然使用 Antd 的 Skeleton */}
+                  <div style={{ padding: '16px' }}>
+                    <Skeleton active title={false} paragraph={{ rows: 2 }} />
+                  </div>
                 </Card>
               </Col>
             ))}
