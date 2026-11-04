@@ -1,5 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Card, Row, Col, Input, Pagination, Empty, Spin, Tag, Button, Space, message } from 'antd';
+import {
+  Card,
+  Row,
+  Col,
+  Input,
+  Pagination,
+  Empty,
+  Spin,
+  Tag,
+  Button,
+  Space,
+  message,
+  Carousel,
+  Skeleton,
+} from 'antd';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { productApi } from '@/api/products';
 import { categoryApi } from '@/api/categories';
@@ -14,6 +28,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const [history, setHistory] = useState<string[]>(['苹果', '鸡蛋']);
   const user = useAuthStore((s) => s.user);
   const addToCart = useCartStore((s) => s.addToCart);
   const [adding, setAdding] = useState<number | null>(null); // 那个商品正在加
@@ -74,6 +89,7 @@ export default function Home() {
 
   const handleSearch = (value: string) => {
     updateParams({ keyword: value.trim() || undefined, page: 1 });
+    setHistory([value, ...history.filter((h) => h !== value)].slice(0, 5));
   };
 
   const handlePageChange = (p: number) => {
@@ -84,6 +100,31 @@ export default function Home() {
   return (
     <div>
       <Space orientation="vertical" size="large" style={{ width: '100%' }}>
+        {/* 顶部轮播图 */}
+        <Carousel autoplay style={{ borderRadius: 8, overflow: 'hidden', marginBottom: 8 }}>
+          <div>
+            <img
+              src="/images/banana.jpg"
+              style={{ width: '100%', height: 260, objectFit: 'cover' }}
+              alt="banana"
+            />
+          </div>
+          <div>
+            <img
+              src="/images/apple.jpg"
+              style={{ width: '100%', height: 260, objectFit: 'cover' }}
+              alt="apple"
+            />
+          </div>
+          <div>
+            <img
+              src="/images/egg.jpg"
+              style={{ width: '100%', height: 260, objectFit: 'cover' }}
+              alt="egg"
+            />
+          </div>
+        </Carousel>
+
         {/* 搜索栏 */}
         <Search
           placeholder="搜索商品名称"
@@ -116,9 +157,16 @@ export default function Home() {
 
         {/* 商品列表 */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 80 }}>
-            <Spin size="large" />
-          </div>
+          <Row gutter={[16, 16]}>
+            {[1, 2, 3, 4].map((item) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={item}>
+                <Card>
+                  <Skeleton.Image active style={{ width: '100%', height: 180 }} />
+                  <Skeleton active paragraph={{ rows: 2 }} style={{ marginTop: 16 }} />
+                </Card>
+              </Col>
+            ))}
+          </Row>
         ) : products.length === 0 ? (
           <Empty description="没有找到商品" />
         ) : (

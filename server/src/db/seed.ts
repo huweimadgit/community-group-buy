@@ -54,22 +54,26 @@ const run = async () => {
     logger.info('分类插入完成');
 
     await conn.query(
-      `INSERT INTO products (id, category_id, name, description, price, unit) VALUES
-        (1, 1, '红富士苹果', '山东烟台产地直发，脆甜多汁', 12.80, '斤'),
-        (2, 1, '海南香蕉',   '自然熟，无催熟剂',           6.50,  '斤'),
-        (3, 2, '土鸡蛋',     '散养土鸡蛋，30枚装',         29.90, '盒'),
-        (4, 2, '黑猪五花肉', '当日现杀，冷链配送',         45.00, '斤'),
-        (5, 3, '大闸蟹',     '阳澄湖大闸蟹，公母各半',     88.00, '只'),
-        (6, 4, '五常大米',   '东北五常稻花香，10斤装',     59.90, '袋')
-       ON DUPLICATE KEY UPDATE name = VALUES(name)`,
+      `INSERT INTO products (id, category_id, name, description, cover_url, price, unit) VALUES
+        (1, 1, '烟台红富士苹果', '脆甜多汁，产地直发，坏果包赔', 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=500&q=80', 12.80, '斤'),
+        (2, 1, '海南特级香蕉', '自然熟，香甜软糯，无催熟剂', 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=500&q=80', 6.50, '斤'),
+        (3, 1, '阳光玫瑰青提', '清甜无籽，带有玫瑰香气，新鲜采摘', 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?w=500&q=80', 25.00, '斤'),
+        (4, 2, '农家散养土鸡蛋', '吃虫子长大的鸡下的蛋，蛋黄饱满', 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=500&q=80', 29.90, '盒'),
+        (5, 2, '黑猪五花肉', '当日现杀，冷链配送，肥瘦相间', 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=500&q=80', 45.00, '斤'),
+        (6, 3, '鲜活大闸蟹', '阳澄湖大闸蟹，公母各半，蟹黄饱满', 'https://images.unsplash.com/photo-1550481890-22623c0b1a9b?w=500&q=80', 88.00, '只'),
+        (7, 4, '东北五常大米', '稻花香2号，米粒饱满，软糯香甜', 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&q=80', 59.90, '袋'),
+        (8, 5, '原木抽纸', '原生木浆，柔软亲肤，家庭装', 'https://images.unsplash.com/photo-1584820927498-cafe3c157921?w=500&q=80', 19.90, '提')
+      ON DUPLICATE KEY UPDATE name = VALUES(name), cover_url = VALUES(cover_url)`,
     );
+
     logger.info('商品插入完成');
 
     await conn.query(
       `INSERT INTO community_products (community_id, product_id, stock, price) VALUES
-        (1, 1, 100, 12.80), (1, 2, 100, 6.50), (1, 3, 50, 29.90), (1, 4, 30, 45.00),
-        (2, 1, 80,  13.00), (2, 2, 80,  6.80), (2, 5, 20, 88.00), (2, 6, 40, 59.90)
-       ON DUPLICATE KEY UPDATE stock = VALUES(stock), price = VALUES(price)`,
+        (1, 1, 100, 12.80), (1, 2, 100, 6.50), (1, 3, 50, 25.00), (1, 4, 50, 29.90),
+        (1, 5, 30, 45.00), (1, 7, 40, 59.90), (1, 8, 100, 19.90),
+        (2, 1, 80, 13.00), (2, 2, 80, 6.80), (2, 4, 40, 30.00), (2, 6, 20, 88.00)
+      ON DUPLICATE KEY UPDATE stock = VALUES(stock), price = VALUES(price)`,
     );
     logger.info('社区商品插入完成');
 

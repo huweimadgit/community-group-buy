@@ -9,7 +9,7 @@ export interface ApiResponse<T = unknown> {
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 10000,
+  timeout: 60000, // 从 10000 改为 60000
 });
 
 // 请求拦截器：自动带 token
@@ -41,7 +41,10 @@ request.interceptors.response.use(
     if (status === 401) {
       localStorage.removeItem('token');
       // 不在这里跳转，避免循环；由路由守卫处理
-      message.error('登录已过期，请重新登录');
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
     } else if (body?.message) {
       message.error(body.message);
     } else {

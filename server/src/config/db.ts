@@ -15,4 +15,6 @@ export const pool = mysql.createPool({
   ssl: process.env.DB_HOST?.includes('tidbcloud.com')
     ? { minVersion: 'TLSv1.2', rejectUnauthorized: true } // 生产环境应验证证书
     : undefined,
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000, //链接建立后10秒开始发送保活探测包
 });
