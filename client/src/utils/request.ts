@@ -9,7 +9,7 @@ export interface ApiResponse<T = unknown> {
 
 const request = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
-  timeout: 60000, // 从 10000 改为 60000
+  timeout: 0, // 从 10000 改为 60000
 });
 
 // 请求拦截器：自动带 token

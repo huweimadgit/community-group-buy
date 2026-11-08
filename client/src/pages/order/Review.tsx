@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, Rate, Input, Button, Space, message, Spin, Empty, Divider, Tag } from 'antd';
+import {
+  Card,
+  Rate,
+  Input,
+  Button,
+  Space,
+  message,
+  Spin,
+  Empty,
+  Divider,
+  Tag,
+  Progress,
+} from 'antd';
 import { ArrowLeftOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { orderApi } from '@/api/orders';
 import { reviewApi } from '@/api/reviews';
@@ -81,14 +93,20 @@ export default function OrderReview() {
   };
 
   const handleUploadVideo = async (itemId: number, file: File) => {
-    if (file.size > 50 * 1024 * 1024) {
-      message.error('视频不能超过 50MB');
+    if (file.size > 200 * 1024 * 1024) {
+      message.error('视频不能超过 200MB');
       return;
     }
     updateForm(itemId, { uploadingVideo: true });
     try {
       const result = await uploadVideoByChunks(file, (percent) => {
-        updateForm(itemId, { videoProgress: percent });
+        setForms((prev) => ({
+          ...prev,
+          [itemId]: {
+            ...prev[itemId],
+            videoProgress: Math.max(prev[itemId].videoProgress || 0, percent),
+          },
+        }));
       });
       updateForm(itemId, { video_url: result.url, uploadingVideo: false, videoProgress: 100 });
       message.success('视频上传成功');
@@ -262,31 +280,37 @@ export default function OrderReview() {
                     </Tag>
                   </div>
                 ) : (
-                  <label
-                    style={{
-                      display: 'inline-block',
-                      padding: '6px 16px',
-                      border: '1px dashed #d9d9d9',
-                      borderRadius: 4,
-                      cursor: form.uploadingVideo ? 'not-allowed' : 'pointer',
-                      color: '#666',
-                    }}
-                  >
-                    {form.uploadingVideo
-                      ? '上传中${form.videoProgress ?? 0}%'
-                      : '选择视频（分片上传）'}
-                    <input
-                      type="file"
-                      accept="video/mp4,video/webm,video/quicktime"
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) handleUploadVideo(it.id, f);
-                        e.target.value = '';
+                  <div>
+                    <label
+                      style={{
+                        display: 'inline-block',
+                        padding: '6px 16px',
+                        border: '1px dashed #d9d9d9',
+                        borderRadius: 4,
+                        cursor: form.uploadingVideo ? 'not-allowed' : 'pointer',
+                        color: '#666',
                       }}
-                      disabled={form.uploadingVideo}
-                    />
-                  </label>
+                    >
+                      {form.uploadingVideo ? '视频上传中...' : '选择视频（分片上传）'}
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        style={{ display: 'none' }}
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handleUploadVideo(it.id, f);
+                          e.target.value = '';
+                        }}
+                        disabled={form.uploadingVideo}
+                      />
+                    </label>
+
+                    {form.uploadingVideo && (
+                      <div style={{ maxWidth: 300, marginTop: 8 }}>
+                        <Progress percent={form.videoProgress} size="small" status="active" />
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 

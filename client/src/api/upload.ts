@@ -48,7 +48,7 @@ export const uploadApi = {
     fd.append('total_chunks', String(params.total_chunks));
     // file 最后 append
     fd.append('file', file);
-    return request.post('/upload/video/chunk', fd, { timeout: 120000 });
+    return request.post('/upload/video/chunk', fd, { timeout: 300000 });
   },
 
   complete: (params: {
@@ -61,6 +61,7 @@ export const uploadApi = {
       .post<{ data: { url: string; filename: string; size: number } }>(
         '/upload/video/complete',
         params,
+        { timeout: 300000 },
       )
       .then((r) => r.data.data),
 };
