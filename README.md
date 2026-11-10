@@ -7,8 +7,10 @@ React + TypeScript + Node.js + MySQL 全栈项目。用户下单购买生鲜日�
 - **前端**：https://community-group-buy.huweimad.workers.dev
 - **后端 API**：https://community-group-buy.onrender.com
 - **健康检查**：https://community-group-buy.onrender.com/api/health
+- **🎬 完整业务演示视频**：[点击观看（B站）](https://www.bilibili.com/video/BV1xKWu6YEhw/?pop_share=1&spm_id_from=333.40164.0.0&vd_source=9bce9127446bbbc7b49b0f10878beccf)
 
 > 后端部署在 Render 免费版，15 分钟无请求会休眠，首次访问需等 30-60 秒冷启动。
+> 💡 视频演示了：下单支付 -> 团长发货 -> 用户收货评价（含视频分片上传） -> 管理端数据看板的完整闭环。
 
 ## 🔑 测试账号（密码都是 123456）
 
